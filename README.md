@@ -1,2 +1,2 @@
 # nene
-A toy neural network implementation that only requires NumPy
+Toy **ne**ural **ne**twork (**nene**) implementation that only requires NumPy

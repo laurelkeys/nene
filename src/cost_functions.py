@@ -1,6 +1,6 @@
 import numpy as np
 
-from activation_function import ActivationFunction, SoftMax
+from activation_functions import ActivationFunction, SoftMax, Linear
 
 class CostFunction:
     ''' A CostFunction is applied to Y (the target values) and Ypred (the predicted values) to get a scalar output
@@ -36,5 +36,23 @@ class CrossEntropy(CostFunction):
             m = Ypred.shape[0]
             # numerically stable
             return (Ypred - Y) / m # (SoftMax(Z) - Y) / m
+        else:
+            return super().deltaL(Y, Ypred, activation_function)
+
+class SoftmaxCrossEntropy(CostFunction):
+    def __call__(self, Y, Ypred):
+        exp = np.exp(Ypred - Ypred.max(axis=1, keepdims=True))
+        Softmax = exp / np.sum(exp, axis=1, keepdims=True)
+        return np.mean( -(Y * np.log(Softmax)).sum(axis=1) )
+    def derivative(self, Y, Ypred):
+        exp = np.exp(Ypred - Ypred.max(axis=1, keepdims=True))
+        Softmax = exp / np.sum(exp, axis=1, keepdims=True)
+        m = Softmax.shape[0]
+        return (Softmax - Y) / m
+    def deltaL(self, Y, Ypred, activation_function):
+        if isinstance(activation_function, Linear):
+            # Linear.derivative(Z) is a matrix of ones, so 
+            # calling it doesn't change the returned value
+            return self.derivative(Y, Ypred) # (SoftMax(Z) - Y) / m
         else:
             return super().deltaL(Y, Ypred, activation_function)

@@ -1,11 +1,13 @@
 import numpy as np
 from time import time
 
-from cost_function import CostFunction
+from cost_functions import CostFunction
+from optimizers import Optimizer
 
 class Net:
     def __init__(self, layers, cost_function, optimizer, weight_initialization='xavier', name=""):
         assert(isinstance(cost_function, CostFunction)), "Invalid object type for cost_function"
+        assert(isinstance(optimizer, Optimizer)), "Invalid object type for optimizer"
         
         self.name = name
         

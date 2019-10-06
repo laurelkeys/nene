@@ -1,6 +1,6 @@
 import numpy as np
 
-from activation_function import ActivationFunction
+from activation_functions import ActivationFunction
 
 class Layer:
     ''' A.shape == (n_examples, output_size)

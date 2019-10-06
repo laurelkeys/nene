@@ -14,6 +14,18 @@ class ActivationFunction:
         ''' A.shape=(n_examples, layer_output_size) '''
         raise NotImplementedError
 
+class Linear(ActivationFunction):
+    def __call__(self, Z):
+        return Z
+    def derivative(self, A):
+        return np.ones_like(A)
+
+class ReLU(ActivationFunction):
+    def __call__(self, Z):
+        return np.maximum(0, Z)
+    def derivative(self, A):
+        return np.where(A > 0, 1, 0)
+
 class Sigmoid(ActivationFunction):
     def __call__(self, Z, clip=500):
         Z = np.clip(Z, -clip, clip) # numerical stability
