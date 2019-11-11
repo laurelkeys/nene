@@ -44,20 +44,22 @@ class Adam(Optimizer):
         self.beta1 = beta1
         self.beta2 = beta2
         self.eps = eps
-        self.m_dW = self.m_db = self.v_dW = self.v_db = None
-        self.correct_bias = correct_bias
-        self.t = 0
-    def update(self, layers):
-        if self.correct_bias:
-            self.__update_w_bias_correct(layers)
+        self.m_dW = None
+        self.m_db = None
+        self.v_dW = None
+        self.v_db = None
+        if correct_bias:
+            self.t = 0
+            self.update = self.__update_w_bias_correct
         else:
-            self.__update_w_o_bias_correct(layers)
+            self.update = self.__update_w_o_bias_correct
     def __update_w_o_bias_correct(self, layers):
+        beta1 = self.beta1; one_minus_beta1 = 1 - beta1
+        beta2 = self.beta2; one_minus_beta2 = 1 - beta2
         for l in range(1, len(layers)):
             layer = layers[l]
-            beta1 = self.beta1; one_minus_beta1 = 1 - beta1
-            beta2 = self.beta2; one_minus_beta2 = 1 - beta2
-            dW = layer.dW; db = layer.db
+            dW = layer.dW
+            db = layer.db
             self.m_dW[l] = (beta1 * self.m_dW[l]) + (one_minus_beta1 * dW)
             self.m_db[l] = (beta1 * self.m_db[l]) + (one_minus_beta1 * db)
             self.v_dW[l] = (beta2 * self.v_dW[l]) + (one_minus_beta2 * dW*dW)
@@ -66,19 +68,20 @@ class Adam(Optimizer):
             layer.b -= (self.learning_rate * self.m_db[l]) / (np.sqrt(self.v_db[l]) + self.eps)
     def __update_w_bias_correct(self, layers):
         self.t += 1
+        beta1 = self.beta1; one_minus_beta1 = 1 - beta1; one_minus_beta1_t = 1 - beta1**self.t
+        beta2 = self.beta2; one_minus_beta2 = 1 - beta2; one_minus_beta2_t = 1 - beta2**self.t
         for l in range(1, len(layers)):
             layer = layers[l]
-            beta1 = self.beta1; one_minus_beta1 = 1 - beta1
-            beta2 = self.beta2; one_minus_beta2 = 1 - beta2
-            dW = layer.dW; db = layer.db
+            dW = layer.dW
+            db = layer.db
             self.m_dW[l] = (beta1 * self.m_dW[l]) + (one_minus_beta1 * dW)
             self.m_db[l] = (beta1 * self.m_db[l]) + (one_minus_beta1 * db)
             self.v_dW[l] = (beta2 * self.v_dW[l]) + (one_minus_beta2 * dW*dW)
             self.v_db[l] = (beta2 * self.v_db[l]) + (one_minus_beta2 * db*db)
-            m_dW_hat = self.m_dW[l] / (1 - beta1**self.t)
-            v_dW_hat = self.v_dW[l] / (1 - beta2**self.t)
-            m_db_hat = self.m_db[l] / (1 - beta1**self.t)
-            v_db_hat = self.v_db[l] / (1 - beta2**self.t)
+            m_dW_hat = self.m_dW[l] / one_minus_beta1_t
+            v_dW_hat = self.v_dW[l] / one_minus_beta2_t
+            m_db_hat = self.m_db[l] / one_minus_beta1_t
+            v_db_hat = self.v_db[l] / one_minus_beta2_t
             layer.W -= (self.learning_rate * m_dW_hat) / (np.sqrt(v_dW_hat) + self.eps)
             layer.b -= (self.learning_rate * m_db_hat) / (np.sqrt(v_db_hat) + self.eps)
     def init(self, layers):

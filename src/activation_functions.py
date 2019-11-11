@@ -39,3 +39,4 @@ class SoftMax(ActivationFunction):
         return exp / np.sum(exp, axis=1, keepdims=True)
     def derivative(self, A):
         return A * (1 - A) # SoftMax(Z) * (1 - SoftMax(Z)) FIXME
+        
